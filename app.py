@@ -27,9 +27,19 @@ def initialize_firebase():
     try:
         # Check if the app is already initialized
         if not firebase_admin._apps:
-            # Create a credential.json file if not using environment variables
-            cred = credentials.Certificate("firebase-credentials.json")
+            # Get Firebase credentials from environment variables
+            firebase_creds = os.environ.get("FIREBASE_CREDENTIALS")
+            
+            if firebase_creds:
+                # Load credentials from environment variable (JSON string)
+                cred_dict = json.loads(firebase_creds)
+                cred = credentials.Certificate(cred_dict)
+            else:
+                # Fallback to file if environment variable is not set
+                cred = credentials.Certificate("firebase-credentials.json")
+                
             firebase_admin.initialize_app(cred)
+            
         return firestore.client()
     except Exception as e:
         st.error(f"Firebase initialization error: {str(e)}")
